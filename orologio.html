@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Casa dell'Orologio - Guest Experience</title>
+    
+    <!-- Framework & Librerie -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Configurazione tema Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        stone: { 50: '#fcfaf7', 100: '#f3f0eb', 200: '#e5e0d8', 800: '#1c1917', 900: '#0c0a09' },
+                        amber: { 100: '#fef3c7', 700: '#92400e', 800: '#78350f', 900: '#451a03' },
+                        whatsapp: '#25D366'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #fcfaf7; color: #1c1917; -webkit-tap-highlight-color: transparent; }
+        .view-transition { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .hidden-view { opacity: 0; pointer-events: none; transform: translateY(15px); display: none; }
+        .active-view { opacity: 1; pointer-events: auto; transform: translateY(0); display: block; }
+        .menu-card { 
+            border: 1px solid #e5e0d8; 
+            background: #ffffff;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .menu-card:active { transform: scale(0.95); background: #fef3c7; }
+        
+        /* Tasti Speciali Bottom */
+        .special-btn {
+            background: #ffffff;
+            border: 2px solid #f3f0eb;
+            transition: all 0.3s ease;
+        }
+        .special-btn:active { transform: scale(0.95); background: #f3f0eb; }
+
+        h1, h2 { font-family: 'Georgia', serif; }
+        
+        .map-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background-color: #f3f0eb;
+            color: #78350f;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.70rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            border: 1px solid #e5e0d8;
+        }
+
+        .whatsapp-partner-link {
+            display: block;
+            background-color: #25D366;
+            color: #ffffff;
+            text-align: center;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 800;
+            margin-top: 10px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 6px -1px rgba(37, 211, 102, 0.2);
+            transition: all 0.2s ease;
+        }
+        .whatsapp-partner-link:active { transform: scale(0.98); }
+
+        .whatsapp-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #25D366;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-left: 4px;
+            box-shadow: 0 2px 4px rgba(37, 211, 102, 0.2);
+        }
+
+        .partner-link {
+            display: block;
+            background-color: #78350f;
+            color: #ffffff;
+            text-align: center;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 800;
+            margin-top: 10px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+        .partner-link:active { transform: scale(0.98); }
+
+        .google-map-iframe {
+            width: 100%;
+            height: 350px;
+            border-radius: 1.5rem;
+            border: 2px solid #e5e0d8;
+            margin-top: 1rem;
+        }
+
+        @keyframes pulse-music {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); color: #92400e; }
+            100% { transform: scale(1); }
+        }
+        .music-active { animation: pulse-music 2s infinite ease-in-out; }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col items-center p-3 sm:p-6">
+
+    <!-- Audio Player (Opzionale: puoi cambiare il file audio) -->
+    <audio id="bg-music" loop preload="auto">
+        <source src="Surriento.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl border border-stone-200 overflow-hidden relative min-h-[92vh] flex flex-col">
+        
+        <!-- HEADER -->
+        <header class="pt-10 pb-6 px-6 flex flex-col items-center text-center bg-white z-10 border-b border-stone-50">
+            <div class="mb-4 relative">
+                <div class="w-60 h-64 flex items-center justify-center overflow-hidden">
+                    <!-- Logo della struttura -->
+                    <img id="main-logo" 
+                         src="Immagine 2026-05-14 164503.jpg" 
+                         alt="Logo La Casa dell'Orologio" 
+                         class="w-full h-full object-contain"
+                         onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='flex';">
+                    
+                    <!-- Fallback se il logo non viene trovato (Icona Orologio) -->
+                    <div id="logo-fallback" class="hidden flex-col items-center text-amber-800 opacity-20">
+                        <i class="fas fa-clock text-8xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex flex-col items-center -mt-4 mb-2">
+                <span class="text-[14px] text-amber-800 font-black uppercase tracking-[0.4em]">Benvenuti</span>
+            </div>
+            
+            <div class="flex gap-2 mt-4">
+                <button id="music-toggle" class="flex items-center justify-center w-10 h-10 bg-stone-100 rounded-full text-stone-900 hover:bg-stone-200 transition-all shadow-md">
+                    <i id="music-icon" class="fas fa-music"></i>
+                </button>
+
+                <button id="lang-toggle" class="flex items-center gap-2 px-6 py-2 bg-stone-900 rounded-full text-[10px] font-black hover:bg-stone-800 transition-colors text-white shadow-lg uppercase tracking-wider">
+                    <i class="fas fa-globe"></i>
+                    <span id="lang-text">ENGLISH</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- DASHBOARD -->
+        <main id="dashboard-view" class="flex-1 p-5 active-view view-transition overflow-y-auto bg-stone-50">
+            <div class="grid grid-cols-3 gap-3" id="menu-grid"></div>
+            
+            <!-- Tasti Speciali Sotto -->
+            <div class="mt-6 flex gap-3 justify-center px-2">
+                <button onclick="openDetail('reviews')" class="special-btn flex-1 p-4 rounded-3xl flex flex-col items-center gap-2 shadow-sm border-red-50">
+                    <div class="text-red-500 text-2xl"><i class="fas fa-heart"></i></div>
+                    <span id="review-btn-text" class="text-[10px] font-black uppercase tracking-widest text-stone-900 text-center">Recensioni</span>
+                </button>
+                <button onclick="openDetail('privacy')" class="special-btn flex-1 p-4 rounded-3xl flex flex-col items-center gap-2 shadow-sm border-blue-50">
+                    <div class="text-blue-500 text-2xl"><i class="fas fa-user-shield"></i></div>
+                    <span id="privacy-btn-text" class="text-[10px] font-black uppercase tracking-widest text-stone-900 text-center">Privacy</span>
+                </button>
+            </div>
+        </main>
+
+        <!-- VISTA DETTAGLIO -->
+        <section id="detail-view" class="flex-1 p-8 hidden-view view-transition absolute inset-0 z-20 bg-white overflow-y-auto flex flex-col">
+            <button id="back-btn" class="self-start mb-6 flex items-center gap-2 text-stone-900 hover:text-amber-800 transition-colors font-black text-xs uppercase tracking-widest">
+                <i class="fas fa-chevron-left"></i>
+                <span id="ui-back">Indietro</span>
+            </button>
+            
+            <div class="flex items-center gap-4 mb-8">
+                <div id="detail-icon" class="text-3xl text-amber-800 bg-amber-50 p-4 rounded-3xl"></div>
+                <h2 id="detail-title" class="text-3xl font-black text-stone-900 leading-tight"></h2>
+            </div>
+            
+            <div id="section-intro" class="text-stone-500 text-sm italic mb-6 border-l-2 border-amber-200 pl-4"></div>
+
+            <div id="detail-content" class="text-stone-800 leading-relaxed space-y-4 text-base font-medium"></div>
+
+            <div id="map-container" class="hidden">
+                <!-- Sostituisci il link src= con quello di Google Maps della tua struttura -->
+                <iframe 
+                    class="google-map-iframe"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3027.530325424564!2d14.373995876547161!3d40.62680197140788!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x133b9ea7b4278db7%3A0xcda67515fbca1316!2sCorso%20Italia%2C%20154%2C%2080067%20Sorrento%20NA!5e0!3m2!1sit!2sit!4v1711000000000!5m2!1sit!2sit" 
+                    allowfullscreen="" 
+                    loading="lazy" 
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+
+            <div id="qr-container" class="mt-6 hidden flex flex-col items-center border-t border-stone-100 pt-6">
+                <p class="text-[10px] text-stone-400 uppercase font-bold mb-2">Inquadra per connetterti</p>
+                <div class="p-2 border-2 border-amber-100 rounded-2xl bg-white shadow-sm overflow-hidden">
+                    <img id="wifi-qr" src="wi-fi.jpg" alt="QR Code Wi-Fi" class="w-48 h-48 object-contain">
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="p-4 bg-white border-t border-stone-100 text-center text-stone-900 text-[10px] font-black uppercase tracking-wider">
+            <div class="flex items-center justify-center gap-2">
+                <i class="fas fa-map-marker-alt text-amber-800"></i>
+                <!-- Modifica qui l'indirizzo mostrato nel footer -->
+                <span>Corso Italia 154 — 80067 Sorrento (NA)</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const appData = {
+            rules: {
+                id: 'rules', icon: 'fa-clipboard-list',
+                title: { it: "Regole", en: "Rules" },
+                intro: { it: "Per una convivenza serena.", en: "For a peaceful stay." },
+                content: {
+                    it: `<strong>Benvenuti a LA CASA DELL'OROLOGIO</strong><br>Siamo felicissimi di avervi con noi nel cuore di Piazza Tasso. Vi chiediamo gentilmente di rispettare queste semplici regole:<br><br>
+                         <strong>1. Arrivo e Partenza</strong><br>• Check-in: dalle 14:00 alle 20:00.<br>• Check-out: entro le 11:00.<br>• Chiavi: la perdita comporta una penale di 20€.<br><br>
+                         <strong>2. Colazione</strong><br>• Vi ricordiamo che la colazione è servita grazie a dei voucher presso i nostri bar convenzionati situati proprio qui sotto, nella piazza principale.<br><br>
+                         <strong>3. Rispetto e Quiete</strong><br>• Silenzio: rispettate il riposo dalle 22:00 alle 08:00. Anche se godiamo dell'affaccio in piazza, le nostre finestre sono insonorizzate per garantirvi il massimo comfort.<br><br>
+                         <strong>4. Sicurezza e Pulizia</strong><br>• Fumo: 100% non fumatori all'interno.<br>• Struttura: vi ricordiamo che siamo in un palazzo storico e l'appartamento è al terzo piano. Saremo felici di aiutarvi con i bagagli!`,
+                    en: `<strong>Welcome to LA CASA DELL'OROLOGIO</strong><br>We are happy to have you here in the heart of Piazza Tasso! Please respect these house rules:<br><br>
+                         <strong>1. Arrival & Departure</strong><br>• Check-in: 2:00 PM - 8:00 PM.<br>• Check-out: by 11:00 AM.<br>• Keys: Loss fee is 20€.<br><br>
+                         <strong>2. Breakfast</strong><br>• We remind you that breakfast is served using the provided vouchers at our partner cafés located right across the square.<br><br>
+                         <strong>3. Respect & Quiet</strong><br>• Quiet hours: 10:00 PM - 8:00 AM. Although we overlook the vibrant square, our rooms feature double glazing to ensure your comfort.<br><br>
+                         <strong>4. Safety & Cleaning</strong><br>• Smoking: 100% non-smoking inside.<br>• Building: Please note we are located on the top floor of a historical building. We are more than happy to help you with your luggage!`
+                }
+            },
+            maps: {
+                id: 'maps', icon: 'fa-location-arrow',
+                title: { it: "Mappa", en: "Map" },
+                intro: { it: "La nostra posizione esatta.", en: "Our exact location." },
+                content: {
+                    it: "Ci troviamo al 3° piano in <strong>Corso Italia 154</strong>, con affaccio sulla splendida Piazza Tasso e l'iconica torre dell'orologio. In pochi minuti a piedi potrete raggiungere la stazione dei treni (10 min) e tutti i punti di maggiore interesse.",
+                    en: "We are located on the 3rd floor at <strong>Corso Italia 154</strong>, overlooking the beautiful Piazza Tasso and the iconic clock tower. In just a 10-minute walk you can reach the train station and all main attractions."
+                },
+                hasMap: true
+            },
+            wifi: {
+                id: 'wifi', icon: 'fa-wifi',
+                title: { it: "Wi-Fi", en: "Wi-Fi" },
+                intro: { it: "Sempre connessi.", en: "Stay connected." },
+                content: {
+                    it: "Network: <strong>WIFI_CASA_OROLOGIO</strong><br>Password: <strong>Orologio2026!</strong>",
+                    en: "Network: <strong>WIFI_CASA_OROLOGIO</strong><br>Password: <strong>Orologio2026!</strong>"
+                },
+                hasQR: true
+            },
+            check: {
+                id: 'check', icon: 'fa-key',
+                title: { it: "Check", en: "Check" },
+                intro: { it: "Arrivi e partenze.", en: "Arrival and departure." },
+                content: {
+                    it: "• <strong>Check-in:</strong> 14:00 - 20:00<br>• <strong>Check-out:</strong> entro le 11:00<br><br>Per qualsiasi necessità relativa ai bagagli o agli orari, non esitate a contattare <strong>Simona</strong>.",
+                    en: "• <strong>Check-in:</strong> 2:00 PM - 8:00 PM<br>• <strong>Check-out:</strong> by 11:00 AM<br><br>For any needs regarding luggage or schedules, please feel free to ask <strong>Simona</strong>."
+                }
+            },
+            parking: {
+                id: 'parking', icon: 'fa-car',
+                title: { it: "Parcheggio", en: "Parking" },
+                intro: { it: "Informazioni parcheggio.", en: "Parking information." },
+                content: {
+                    it: `La nostra struttura dispone di un <strong>parcheggio convenzionato</strong> per i nostri ospiti.<br><br>
+                         Per maggiori informazioni sulle tariffe e per prenotare il tuo posto auto, ti preghiamo di contattare direttamente Simona.`,
+                    en: `Our property offers <strong>partner parking</strong> for our guests.<br><br>
+                         For more information on rates and to reserve your parking space, please contact Simona directly.`
+                }
+            },
+            beaches: {
+                id: 'beaches', icon: 'fa-umbrella-beach',
+                title: { it: "Spiagge", en: "Beaches" },
+                intro: { it: "I posti più belli dove fare il bagno.", en: "The best places to swim." },
+                content: {
+                    it: `1. <strong>Spiaggia Centrale:</strong> A pochi passi dalla struttura. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Mappa</a><br><br>
+                         2. <strong>Cala Nascosta:</strong> Spiaggia amata dai locali. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Mappa</a>`,
+                    en: `1. <strong>Central Beach:</strong> A few steps from the property. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Map</a><br><br>
+                         2. <strong>Hidden Cove:</strong> A favorite local beach. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Map</a>`
+                }
+            },
+            excursions: {
+                id: 'excursions', icon: 'fa-compass',
+                title: { it: "Esperienze", en: "Experiences" },
+                intro: { it: "Vivi il territorio con i nostri partner!", en: "Live the area with our partners!" },
+                content: {
+                    it: `<div class="text-center">
+                         <p class="mb-2 italic">Desideri organizzare un'escursione a Pompei, Capri, Costiera Amalfitana o hai bisogno di un Transfer?</p>
+                         <strong class="text-xl block mb-2 text-stone-900">Chiedi a Simona</strong>
+                         <a href="https://wa.me/393397186457" target="_blank" class="whatsapp-partner-link"><i class="fab fa-whatsapp mr-2"></i> Scrivimi su WhatsApp</a>
+                         <hr class="border-stone-100 my-8">
+                         <p class="mb-4">Esplora le meraviglie locali con i nostri tour consigliati. Saremo felici di aiutarti ad organizzare la tua giornata perfetta.</p>
+                         </div>`,
+                    en: `<div class="text-center">
+                         <p class="mb-2 italic">Do you want to plan a day trip to Pompeii, Capri, the Amalfi Coast or need a Transfer?</p>
+                         <strong class="text-lg block mb-2 text-stone-900">Ask Simona</strong>
+                         <a href="https://wa.me/393397186457" target="_blank" class="whatsapp-partner-link"><i class="fab fa-whatsapp mr-2"></i> Message on WhatsApp</a>
+                         <hr class="border-stone-100 my-8">
+                         <p class="mb-4">Explore local wonders with our recommended tours. We'll be more than happy to help you organize the perfect day.</p>
+                         </div>`
+                }
+            },
+            services: {
+                id: 'services', icon: 'fa-concierge-bell',
+                title: { it: "Servizi", en: "Services" },
+                intro: { it: "Tutto ciò di cui hai bisogno.", en: "Everything you need." },
+                content: {
+                    it: `<strong>Servizi Inclusi</strong><br>
+                         • Free Wi-Fi<br>
+                         • Ascensore<br>
+                         • Deposito bagagli<br>
+                         • Distributore bibite in area comune<br>
+                         • Aria condizionata e Set bollitore in camera<br><br>
+                         <hr class="border-stone-100 my-4">
+                         <strong>Su richiesta (a pagamento)</strong><br>
+                         • Servizio lavanderia<br>
+                         • Parcheggio convenzionato<br>
+                         • Navetta aeroportuale (Transfer privati)<br>
+                         • Escursioni organizzate`,
+                    en: `<strong>Included Services</strong><br>
+                         • Free Wi-Fi<br>
+                         • Elevator<br>
+                         • Luggage storage<br>
+                         • Drinks dispenser in common area<br>
+                         • A/C and Tea facilities in room<br><br>
+                         <hr class="border-stone-100 my-4">
+                         <strong>On request (extra charge)</strong><br>
+                         • Laundry service<br>
+                         • Partner parking<br>
+                         • Airport shuttle (Private transfer)<br>
+                         • Organized excursions`
+                }
+            },
+            food: {
+                id: 'food', icon: 'fa-utensils',
+                title: { it: "Cena", en: "Dining" },
+                intro: { it: "Consigli gastronomici.", en: "Dining tips." },
+                content: {
+                    it: `1. <strong>Pizzeria Locale:</strong> Pizza leggendaria. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Mappa</a><br><br>
+                         2. <strong>Trattoria Tipica:</strong> Cucina tradizionale. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Mappa</a><br><br>
+                         3. <strong>Ristorante di Mare:</strong> Pesce fresco. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Mappa</a>`,
+                    en: `1. <strong>Local Pizzeria:</strong> Legendary Pizza. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Map</a><br><br>
+                         2. <strong>Typical Trattoria:</strong> Traditional food. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Map</a><br><br>
+                         3. <strong>Seafood Restaurant:</strong> Fresh catch. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Map</a>`
+                }
+            },
+            shopping: {
+                id: 'shopping', icon: 'fa-shopping-cart',
+                title: { it: "Shop", en: "Shop" },
+                intro: { it: "Consigli per acquisti.", en: "Shopping tips." },
+                content: {
+                    it: `1. <strong>Supermercato Centrale</strong>: spesa quotidiana. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Mappa</a><br><br>
+                         2. <strong>Via dello Shopping</strong>: la via principale. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Mappa</a><br><br>
+                         3. <strong>Botteghe Artigiane</strong>: prodotti locali tipici. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Mappa</a>`,
+                    en: `1. <strong>Central Supermarket</strong>: for groceries. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Map</a><br><br>
+                         2. <strong>Shopping Street</strong>: the main street. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Map</a><br><br>
+                         3. <strong>Artisan Shops</strong>: typical local products. <a href="#" target="_blank" class="map-link"><i class="fas fa-map-marker-alt"></i> Map</a>`
+                }
+            },
+            transport: {
+                id: 'transport', icon: 'fa-bus',
+                title: { it: "Muoversi", en: "Transport" },
+                intro: { it: "Come spostarsi.", en: "Getting around." },
+                content: {
+                    it: `1. <strong>Treni Locali (Circumvesuviana):</strong> A 10 minuti a piedi, ideale per Pompei e Napoli. <a href="https://www.eavsrl.it/web/orari-linee-ferroviarie" target="_blank" class="map-link"><i class="fas fa-external-link-alt"></i> Orari</a><br><br>
+                         2. <strong>Bus (SITA):</strong> Vicino alla stazione, collegamenti per la Costiera Amalfitana. <a href="https://www.sitasudtrasporti.it/orari" target="_blank" class="map-link"><i class="fas fa-external-link-alt"></i> Orari</a><br><br>
+                         3. <strong>Traghetti:</strong> Al porto (raggiungibile anche con ascensore o scale da Piazza Tasso). <a href="#" target="_blank" class="map-link"><i class="fas fa-ship"></i> Info</a>`,
+                    en: `1. <strong>Local Trains (Circumvesuviana):</strong> 10-minute walk, ideal for Pompeii and Naples. <a href="https://www.eavsrl.it/web/orari-linee-ferroviarie" target="_blank" class="map-link"><i class="fas fa-external-link-alt"></i> Schedule</a><br><br>
+                         2. <strong>Bus (SITA):</strong> Near the train station, for the Amalfi Coast. <a href="https://www.sitasudtrasporti.it/orari" target="_blank" class="map-link"><i class="fas fa-external-link-alt"></i> Schedule</a><br><br>
+                         3. <strong>Ferries:</strong> At the Marina (reachable by lift or stairs from Piazza Tasso). <a href="#" target="_blank" class="map-link"><i class="fas fa-ship"></i> Info</a>`
+                }
+            },
+            emergency: {
+                id: 'emergency', icon: 'fa-phone-alt',
+                title: { it: "SOS", en: "SOS" },
+                intro: { it: "Sempre disponibili.", en: "Always available." },
+                content: {
+                    it: `<strong>Simona (Host)</strong> <a href="https://wa.me/393397186457" target="_blank" class="whatsapp-btn"><i class="fab fa-whatsapp"></i> Chat</a><br><br>
+                         <strong>Emergenza Medica</strong> <a href="tel:118" class="map-link">Chiama 118</a><br><br>
+                         <strong>Forze dell'Ordine</strong> <a href="tel:112" class="map-link">Chiama 112</a>`,
+                    en: `<strong>Simona (Host)</strong> <a href="https://wa.me/393397186457" target="_blank" class="whatsapp-btn"><i class="fab fa-whatsapp"></i> Chat</a><br><br>
+                         <strong>Medical Emergency</strong> <a href="tel:118" class="map-link">Call 118</a><br><br>
+                         <strong>Police</strong> <a href="tel:112" class="map-link">Call 112</a>`
+                }
+            },
+            reviews: {
+                id: 'reviews', icon: 'fa-heart',
+                title: { it: "Recensioni", en: "Reviews" },
+                intro: { it: "Il vostro supporto è prezioso.", en: "Your support is precious." },
+                content: {
+                    it: `<div class="text-center">
+                         <i class="fas fa-heart text-red-500 text-3xl mb-4"></i>
+                         <p class="mb-4 text-stone-700 leading-relaxed font-medium">
+                            La felicità non è un'emozione permanente:<br>
+                            arriva, passa, ritorna.<br><br>
+                            Curiosamente, appare più spesso<br><br>
+                            quando arriva una tua recensione positiva.
+                         </p>
+                         <p class="text-stone-900 font-black mb-6 text-sm">Grazie di cuore per allungare questo momento!</p>
+                         <a href="#" target="_blank" class="partner-link bg-red-600 shadow-lg"><i class="fas fa-star mr-2"></i> Lascia una recensione</a>
+                         </div>`,
+                    en: `<div class="text-center">
+                         <i class="fas fa-heart text-red-500 text-3xl mb-4"></i>
+                         <p class="mb-4 text-stone-700 leading-relaxed font-medium">
+                            Happiness is not a permanent emotion:<br>
+                            it arrives, passes, returns.<br><br>
+                            Curiously, it appears more often<br><br>
+                            when a positive review from you arrives.
+                         </p>
+                         <p class="text-stone-900 font-black mb-6 text-sm">Thank you so much for extending this moment!</p>
+                         <a href="#" target="_blank" class="partner-link bg-red-600 shadow-lg"><i class="fas fa-star mr-2"></i> Leave a review</a>
+                         </div>`
+                }
+            },
+            privacy: {
+                id: 'privacy', icon: 'fa-user-shield',
+                title: { it: "Privacy", en: "Privacy" },
+                intro: { it: "Informativa (Art. 13 GDPR)", en: "Privacy Policy (GDPR)" },
+                content: {
+                    it: `<div class="text-sm space-y-3">
+                         <p><strong>Gentile Ospite</strong>, ai sensi della normativa vigente, la informiamo che:</p>
+                         <p>• <strong>Finalità</strong>: I suoi dati personali sono raccolti esclusivamente per l'adempimento degli obblighi di legge e per la gestione amministrativa del soggiorno (ricevuta).</p>
+                         <p>• <strong>Conservazione</strong>: I dati identificativi saranno conservati per il tempo strettamente necessario agli obblighi fiscali (10 anni per le ricevute) e di pubblica sicurezza.</p>
+                         <p>• <strong>Diritti</strong>: Lei ha il diritto di chiedere l'accesso, la rettifica o la cancellazione dei dati (nei limiti di legge).</p>
+                         <p>• <strong>Titolare del trattamento</strong>: La Casa dell'Orologio Sorrento - Corso Italia 154, Sorrento (NA) - P.IVA: 08164481213.</p>
+                         </div>`,
+                    en: `<div class="text-sm space-y-3">
+                         <p><strong>Dear Guest</strong>, in accordance with current regulations (GDPR):</p>
+                         <p>• <strong>Purpose</strong>: Your personal data is collected exclusively for legal obligations and administrative management of your stay.</p>
+                         <p>• <strong>Storage</strong>: Identification data will be stored for the time strictly required by fiscal obligations (10 years for receipts) and public security.</p>
+                         <p>• <strong>Rights</strong>: You have the right to request access, rectification, or deletion of data (within legal limits).</p>
+                         <p>• <strong>Data Controller</strong>: La Casa dell'Orologio Sorrento - Corso Italia 154, Sorrento (NA) - VAT: 08164481213.</p>
+                         </div>`
+                }
+            }
+        };
+
+        let currentLang = 'it';
+        let isMusicPlaying = false;
+        let isTransitioning = false;
+
+        function initApp() {
+            renderDashboard();
+            updateUIText();
+            
+            // Gestione Volume Musica (0.0 a 1.0)
+            const audio = document.getElementById('bg-music');
+            audio.volume = 0.2; // Impostato al 20% per sottofondo gradevole
+
+            document.getElementById('lang-toggle').onclick = () => {
+                currentLang = currentLang === 'it' ? 'en' : 'it';
+                updateUIText();
+                renderDashboard();
+                if(!document.getElementById('detail-view').classList.contains('hidden-view')) {
+                    openDetail(document.getElementById('detail-view').dataset.activeId);
+                }
+            };
+
+            const musicToggle = document.getElementById('music-toggle');
+            const musicIcon = document.getElementById('music-icon');
+
+            const playAudio = async () => {
+                if (isTransitioning || isMusicPlaying) return;
+                isTransitioning = true;
+                try {
+                    if (audio.readyState === 0) audio.load();
+                    await audio.play();
+                    musicIcon.className = "fas fa-volume-up text-amber-800";
+                    musicToggle.classList.add('music-active');
+                    isMusicPlaying = true;
+                } catch (e) { console.log("Autoplay bloccato."); }
+                finally { isTransitioning = false; }
+            };
+
+            musicToggle.onclick = async () => {
+                if (isTransitioning) return;
+                if (isMusicPlaying) {
+                    audio.pause();
+                    musicIcon.className = "fas fa-music text-stone-900";
+                    musicToggle.classList.remove('music-active');
+                    isMusicPlaying = false;
+                } else { playAudio(); }
+            };
+
+            document.addEventListener('click', playAudio, { once: true });
+            document.addEventListener('touchstart', playAudio, { once: true });
+            document.getElementById('back-btn').onclick = closeDetail;
+        }
+
+        function renderDashboard() {
+            const grid = document.getElementById('menu-grid');
+            grid.innerHTML = '';
+            // Escludiamo reviews e privacy dalla griglia principale per tenerli in fondo come bottoni speciali
+            const specialIds = ['reviews', 'privacy'];
+            Object.values(appData).filter(item => !specialIds.includes(item.id)).forEach(item => {
+                const card = document.createElement('button');
+                card.className = "menu-card p-3 rounded-2xl flex flex-col items-center justify-center gap-1.5 shadow-sm";
+                card.onclick = () => openDetail(item.id);
+                card.innerHTML = `
+                    <div class="text-amber-800 text-xl"><i class="fas ${item.icon}"></i></div>
+                    <span class="text-[10px] font-black uppercase tracking-tighter text-stone-900 text-center leading-none">${item.title[currentLang]}</span>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateUIText() {
+            document.getElementById('lang-text').textContent = currentLang === 'it' ? "ENGLISH" : "ITALIANO";
+            document.getElementById('ui-back').textContent = currentLang === 'it' ? "Indietro" : "Back";
+            document.getElementById('review-btn-text').textContent = currentLang === 'it' ? "Recensioni" : "Reviews";
+            document.getElementById('privacy-btn-text').textContent = currentLang === 'it' ? "Privacy" : "Privacy";
+        }
+
+        function openDetail(id) {
+            const data = appData[id];
+            const detailView = document.getElementById('detail-view');
+            detailView.dataset.activeId = id;
+            document.getElementById('detail-title').textContent = data.title[currentLang];
+            document.getElementById('detail-icon').innerHTML = `<i class="fas ${data.icon}"></i>`;
+            document.getElementById('section-intro').textContent = data.intro[currentLang];
+            document.getElementById('detail-content').innerHTML = data.content[currentLang];
+            const mapContainer = document.getElementById('map-container');
+            if(data.hasMap) mapContainer.classList.remove('hidden');
+            else mapContainer.classList.add('hidden');
+            const qr = document.getElementById('qr-container');
+            if(data.hasQR) qr.classList.remove('hidden');
+            else qr.classList.add('hidden');
+            document.getElementById('dashboard-view').classList.add('hidden-view');
+            detailView.classList.remove('hidden-view');
+            detailView.classList.add('active-view');
+        }
+
+        function closeDetail() {
+            document.getElementById('detail-view').classList.remove('active-view');
+            document.getElementById('detail-view').classList.add('hidden-view');
+            document.getElementById('dashboard-view').classList.remove('hidden-view');
+            document.getElementById('dashboard-view').classList.add('active-view');
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
